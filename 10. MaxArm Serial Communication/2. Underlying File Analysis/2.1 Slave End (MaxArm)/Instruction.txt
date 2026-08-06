@@ -1,0 +1,2 @@
+The communication routines for MaxArm supports two connection methods, each corresponding to the use of microUSB and 4PIN interface respectively.
+The microUSB connection is compatible with boards such as Raspberry Pi and Jetson, while  the 4Pin interface can be used to connect with with STM32, Arduino, 51 single-chip microcontrollers, and similar devices.

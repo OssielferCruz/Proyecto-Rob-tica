@@ -1,0 +1,8 @@
+1. All the programs in 2. Remote Control and 3.PC Software is written with Python. You need to use Python editor to download programs into controller to start games.
+
+2. In Python editor, only a single main program (main.py) exits, so you need to download the main program of the corresponding game before switching to another game. The main program file of the game is located in the same directory with the game.
+
+3.If the game changes from Arduino to Python, you need to re-burn the firmware first.
+
+The firmware burning method refer to the content in "Appendix/5. Restore ESP32 Board Firmware".
+
