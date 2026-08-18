@@ -108,31 +108,46 @@ async def run_game(game_id: str):
         with open(script_path, "r", encoding="utf-8", errors="ignore") as f:
             code_content = f.read()
 
-        # 1. Reemplazar el entry point para ejecutar el script nativamente en MicroPython
+        # Reemplazar el entry point para poder ejecutar el script desde RAW REPL.
         code_clean = code_content.replace("if __name__ == '__main__':", "if True:")
 
-        # 2. Ajustar tolerancia PID de 0.1 a 0.8 e i > 3 para permitir el descenso y la captura automática de bloques con ruido de cámara real.
-        #    Esto sólo ayuda a que el bloque se capture más fácil cuando ya está centrado.
-        code_clean = code_clean.replace("abs(dx) < 0.1 and abs(dy) < 0.1", "abs(dx) < 0.8 and abs(dy) < 0.8")
-        code_clean = code_clean.replace("if i > 10:", "if i > 3:")
+        # Calibración de Trigger Visual Directo y Estabilización:
+        if game_id == "color_tracking_sorting":
+            # 1. Ganancia PID adecuada para centrado fluido
+            code_clean = code_clean.replace("PID(0.08, 0.003, 0.0003)", "PID(0.04, 0.0015, 0.00015)")
+            
+            # 2. Velocidad de servos (100ms por paso) y retardo de cámara (80ms)
+            code_clean = code_clean.replace("arm.set_position((x,y,z),50)", "arm.set_position((x,y,z),100)")
+            code_clean = code_clean.replace("time.sleep_ms(50)", "time.sleep_ms(80)")
 
-        # 3. No filtrar blobs para el juego de seguimiento y ordenamiento por color.
-        #    El loop oficial necesita ver la detección tal como la entrega WonderCam.
-        if target_game["id"] == "color_sorting" and "get_color_blob(" in code_clean:
-            blob_filter_func = """
-def get_valid_blob(cam, id_num):
-    data = cam.get_color_blob(id_num)
-    if data and 15 <= data[2] <= 130 and 15 <= data[3] <= 130:
-        return data
+            # 3. Trigger visual directo (28x22px) y confirmacion fluida de 4 lecturas (~0.5s)
+            code_clean = code_clean.replace("if abs(dx) < 0.1 and abs(dy) < 0.1:", "if abs(center_x - 160) < 28 and abs(center_y - 120) < 22:")
+            code_clean = code_clean.replace("if i > 10:", "if i > 4:")
+            
+            # 4. Ajuste fino de caída al centro exacto del cubo (d_y = 80mm, +13mm a la derecha, Z=76mm)
+            code_clean = code_clean.replace("d_x = x/2.3", "d_x = (x / 2.3) + 18")
+            code_clean = code_clean.replace("d_y = (68-abs(d_x/3))", "d_y = 80")
+            code_clean = code_clean.replace("arm.set_position((x+d_x,y-d_y,86),600)", "arm.set_position((x+d_x,y-d_y,76),750)")
+        else:
+            code_clean = code_clean.replace("abs(dx) < 0.1 and abs(dy) < 0.1", "abs(dx) < 0.8 and abs(dy) < 0.8")
+            code_clean = code_clean.replace("if i > 10:", "if i > 3:")
+
+        # Inyectar filtro inteligente de blobs sin recursión infinita
+        if "cam = WonderCam(i2c)" in code_clean:
+            patch_code = """cam = WonderCam(i2c)
+_raw_get_blob = cam.get_color_blob
+def _filtered_get_color_blob(id_num):
+    d = _raw_get_blob(id_num)
+    if d and 15 <= d[2] <= 130 and 15 <= d[3] <= 130:
+        return d
     return None
-"""
-            code_clean = blob_filter_func + "\n" + code_clean
-            code_clean = code_clean.replace("cam.get_color_blob(", "get_valid_blob(cam, ")
+cam.get_color_blob = _filtered_get_color_blob"""
+            code_clean = code_clean.replace("cam = WonderCam(i2c)", patch_code)
 
         bundle_files = target_game.get("bundle_files", [os.path.basename(script_path)])
         script_dir = os.path.dirname(script_path)
 
-        # Interrupción previa atómica para limpiar cualquier loop previo en el ESP32
+        # Interrupción previa atómica para limpiar cualquier loop previo en el ESP32.
         arm.ser.write(b'\x02\x03\x03\r\n')
         await asyncio.sleep(0.3)
 
@@ -159,13 +174,13 @@ def get_valid_blob(cam, id_num):
             arm.exec_raw_repl(build_write_script(remote_name, file_content))
             await asyncio.sleep(0.35)
 
-        # Ejecutar main.py en RAW REPL mode
+        # Ejecutar main.py en RAW REPL.
         arm.exec_raw_repl("exec(open('main.py').read())\n")
         await asyncio.sleep(0.3)
 
         return JSONResponse({
             "status": "ok",
-            "message": f"Juego '{target_game['name']}' cargado y ejecutado exitosamente en el ESP32.",
+            "message": f"Juego '{target_game['name']}' restaurado a respuesta fluida (28x22px, 4 lecturas).",
             "path": script_path
         })
     except Exception as e:
