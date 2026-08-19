@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mira Studio | Control Cartesiano & Visión IA</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+  <div class="dashboard-wrapper">
+
+    <!-- Header Principal -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-badge">
+          <span>🦾</span>
+        </div>
+        <div>
+          <h1>Mira <span>Studio</span></h1>
+          <p class="subtitle">Estación de Control Robótico, Cinemática & Visión por IA</p>
+        </div>
+      </div>
+
+      <!-- Live Coordinate Telemetry Header Bar -->
+      <div class="live-coords-bar">
+        <div class="coord-pill"><span class="label">X:</span> <span id="hdrX" class="val">0</span> <span
+            class="unit">mm</span></div>
+        <div class="coord-pill"><span class="label">Y:</span> <span id="hdrY" class="val">-163</span> <span
+            class="unit">mm</span></div>
+        <div class="coord-pill"><span class="label">Z:</span> <span id="hdrZ" class="val">212</span> <span
+            class="unit">mm</span></div>
+        <div class="coord-pill"><span class="label">Ventosa:</span> <span id="hdrNozzle" class="val">0°</span></div>
+      </div>
+
+      <div class="header-status-group">
+        <div id="statusBadge" class="status-pill connected">
+          <span class="status-dot"></span>
+          <span id="statusText">Conectado (COM6)</span>
+        </div>
+        <button id="btnReconnect" class="btn-header-reconnect">⚡ Reconectar COM6</button>
+      </div>
+    </header>
+
+    <!-- Bar de Telemetría Realtime -->
+    <section class="section-telemetry-bar">
+      <div class="metric-card metric-x">
+        <div class="metric-icon">↔️</div>
+        <div class="metric-content">
+          <span class="metric-label">Eje X (Lateral)</span>
+          <div class="metric-val-group">
+            <span id="txtMetricX" class="metric-val">0</span>
+            <span class="metric-unit">mm</span>
+          </div>
+        </div>
+        <div class="metric-limit">Min -180 / Max +180</div>
+      </div>
+
+      <div class="metric-card metric-y">
+        <div class="metric-icon">↕️</div>
+        <div class="metric-content">
+          <span class="metric-label">Eje Y (Alcance)</span>
+          <div class="metric-val-group">
+            <span id="txtMetricY" class="metric-val">-163</span>
+            <span class="metric-unit">mm</span>
+          </div>
+        </div>
+        <div class="metric-limit">Min -280 / Max +100</div>
+      </div>
+
+      <div class="metric-card metric-z">
+        <div class="metric-icon">🔼</div>
+        <div class="metric-content">
+          <span class="metric-label">Eje Z (Altura)</span>
+          <div class="metric-val-group">
+            <span id="txtMetricZ" class="metric-val">212</span>
+            <span class="metric-unit">mm</span>
+          </div>
+        </div>
+        <div class="metric-limit">Min 0 / Max +260</div>
+      </div>
+
+      <div class="metric-card metric-nozzle">
+        <div class="metric-icon">🔄</div>
+        <div class="metric-content">
+          <span class="metric-label">Giro Muñeca</span>
+          <div class="metric-val-group">
+            <span id="txtMetricNozzle" class="metric-val">0°</span>
+          </div>
+        </div>
+        <div class="metric-limit">Rango -90° a +90°</div>
+      </div>
+    </section>
+
+    <!-- Main Grid Layout -->
+    <main class="main-grid">
+
+      <!-- Columna Izquierda: Controles XYZ con Deslizadores y Ajuste Fino -->
+      <div class="left-column">
+
+        <!-- Banner de Alerta Crítica de Límites Físicos -->
+        <div id="criticalLimitBox" class="critical-limit-box hidden">
+          <div class="limit-icon">🚨</div>
+          <div class="limit-info">
+            <h4>¡Límite Crítico Alcanzado!</h4>
+            <p id="criticalLimitMsg">El movimiento solicitado excede el rango de trabajo seguro del robot.</p>
+          </div>
+        </div>
+
+        <!-- Sección 1: Control Cartesiano XYZ -->
+        <section class="card section-card section-xyz">
+          <div class="card-header">
+            <div class="header-tag tag-xyz">🎮 Control Cartesiano XYZ</div>
+            <span class="hint-text">Desliza o usa los botones de precisión</span>
+          </div>
+
+          <div class="controls-stack">
+            <!-- Control Eje X -->
+            <div class="control-row" id="rowX">
+              <div class="control-label-bar">
+                <span class="axis-name name-x">Eje X (Izquierda / Derecha)</span>
+                <span id="valX" class="axis-readout">0 mm</span>
+              </div>
+              <div class="slider-fine-group">
+                <button class="btn-step-fine" onclick="adjustAxis('X', -5)">-5</button>
+                <button class="btn-step-fine" onclick="adjustAxis('X', -1)">-1</button>
+                <div class="slider-track-wrap">
+                  <input type="range" id="sliderX" min="-180" max="180" value="0" step="1">
+                  <div class="slider-bounds"><span>-180 mm</span><span>0</span><span>+180 mm</span></div>
+                </div>
+                <button class="btn-step-fine" onclick="adjustAxis('X', 1)">+1</button>
+                <button class="btn-step-fine" onclick="adjustAxis('X', 5)">+5</button>
+              </div>
+            </div>
+
+            <!-- Control Eje Y -->
+            <div class="control-row" id="rowY">
+              <div class="control-label-bar">
+                <span class="axis-name name-y">Eje Y (Profundidad / Alcance)</span>
+                <span id="valY" class="axis-readout">-163 mm</span>
+              </div>
+              <div class="slider-fine-group">
+                <button class="btn-step-fine" onclick="adjustAxis('Y', -5)">-5</button>
+                <button class="btn-step-fine" onclick="adjustAxis('Y', -1)">-1</button>
+                <div class="slider-track-wrap">
+                  <input type="range" id="sliderY" min="-280" max="100" value="-163" step="1">
+                  <div class="slider-bounds"><span>-280 mm</span><span>-163</span><span>+100 mm</span></div>
+                </div>
+                <button class="btn-step-fine" onclick="adjustAxis('Y', 1)">+1</button>
+                <button class="btn-step-fine" onclick="adjustAxis('Y', 5)">+5</button>
+              </div>
+            </div>
+
+            <!-- Control Eje Z -->
+            <div class="control-row" id="rowZ">
+              <div class="control-label-bar">
+                <span class="axis-name name-z">Eje Z (Elevación / Altura)</span>
+                <span id="valZ" class="axis-readout">212 mm</span>
+              </div>
+              <div class="slider-fine-group">
+                <button class="btn-step-fine" onclick="adjustAxis('Z', -5)">-5</button>
+                <button class="btn-step-fine" onclick="adjustAxis('Z', -1)">-1</button>
+                <div class="slider-track-wrap">
+                  <input type="range" id="sliderZ" min="0" max="260" value="212" step="1">
+                  <div class="slider-bounds"><span>0 mm</span><span>130</span><span>+260 mm</span></div>
+                </div>
+                <button class="btn-step-fine" onclick="adjustAxis('Z', 1)">+1</button>
+                <button class="btn-step-fine" onclick="adjustAxis('Z', 5)">+5</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sección 2: Posición Inicial & Preajustes -->
+        <section class="card section-card section-home">
+          <div class="card-header">
+            <div class="header-tag tag-home">🏠 Posición Inicial & Preajustes</div>
+          </div>
+
+          <div class="presets-grid">
+            <button id="btnHome" class="btn-main-home">
+              <span class="home-icon">🏠</span>
+              <div class="home-text">
+                <strong>Regresar a Posición Inicial (Home)</strong>
+                <small>Retorna a (0, -163, 212) mm y apaga bomba</small>
+              </div>
+            </button>
+
+            <div class="quick-preset-buttons">
+              <button class="btn-preset" onclick="setPreset(0, -140, 50)">📍 Suelo (Agarre)</button>
+              <button class="btn-preset" onclick="setPreset(0, -220, 150)">📍 Extensión Max</button>
+              <button class="btn-preset" onclick="setPreset(120, -160, 180)">📍 Derecha +120</button>
+              <button class="btn-preset" onclick="setPreset(-120, -160, 180)">📍 Izquierda -120</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sección 3: Actuadores (Bomba de Vacío & Muñeca) -->
+        <section class="card section-card section-actuators">
+          <div class="card-header">
+            <div class="header-tag tag-actuators">💨 Actuadores & Ventosa de Succión</div>
+          </div>
+
+          <div class="actuators-grid">
+            <div class="pump-card">
+              <div class="pump-header">
+                <span class="pump-title">Bomba de Vacío</span>
+                <span id="pumpStatusTag" class="pump-status-tag off">APAGADA</span>
+              </div>
+              <button id="btnToggleSuction" class="btn-suction-action suction-off">
+                <span class="suction-icon">💨</span>
+                <span id="suctionBtnText">ENCENDER SUCCIÓN DE VACÍO</span>
+              </button>
+            </div>
+
+            <div class="nozzle-card">
+              <div class="nozzle-header">
+                <span>Ángulo Giro Muñeca</span>
+                <span id="valServo" class="mono-badge">0°</span>
+              </div>
+              <div class="slider-fine-group">
+                <button class="btn-step-fine" onclick="adjustServo(-5)">-5°</button>
+                <input type="range" id="sliderServo" min="-90" max="90" value="0" step="1">
+                <button class="btn-step-fine" onclick="adjustServo(5)">+5°</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Columna Derecha: Simulación 2D, Programador de Secuencias y Consola -->
+      <div class="right-column">
+
+        <!-- Sección 4: Cinemática Inversa & Simulación 2D -->
+        <section class="card section-card section-canvas">
+          <div class="card-header">
+            <div class="header-tag tag-canvas">📐 Cinemática Inversa & Simulación 2D</div>
+            <div class="joint-badges">
+              <span id="badgeJ1" class="j-badge">J1: 90°</span>
+              <span id="badgeJ2" class="j-badge">J2: 90°</span>
+              <span id="badgeJ3" class="j-badge">J3: 0°</span>
+            </div>
+          </div>
+
+          <div class="canvas-box">
+            <canvas id="armCanvas" width="460" height="220"></canvas>
+          </div>
+        </section>
+
+        <!-- Sección 5: Programador de Secuencias -->
+        <section class="card section-card section-programmer">
+          <div class="card-header">
+            <div class="header-tag tag-programmer">📋 Programador de Rutinas & Secuencias</div>
+            <div class="seq-btn-group">
+              <button id="btnAddAction" class="btn-seq btn-seq-add">➕ Guardar Posición</button>
+              <button id="btnRunSequence" class="btn-seq btn-seq-play">▶ Ejecutar</button>
+              <button id="btnClearSequence" class="btn-seq btn-seq-clear">🗑️ Limpiar</button>
+            </div>
+          </div>
+
+          <div class="table-frame">
+            <table class="seq-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>X (mm)</th>
+                  <th>Y (mm)</th>
+                  <th>Z (mm)</th>
+                  <th>Muñeca</th>
+                  <th>Succión</th>
+                  <th>Borrar</th>
+                </tr>
+              </thead>
+              <tbody id="actionsTbody">
+                <tr class="empty-row">
+                  <td colspan="7">No hay posiciones guardadas. Usa "Guardar Posición" para crear una secuencia
+                    personalizada.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Sección 6: Consola de Diagnóstico -->
+        <section class="card section-card section-console">
+          <div class="card-header">
+            <div class="header-tag tag-console">📟 Consola de Telemetría & Serial</div>
+          </div>
+          <div id="logConsole" class="log-console">
+            <div class="log-entry system">[SISTEMA] Mira Studio inicializado. Puerto serial listo (ESP32 en COM6,
+              WonderCam en COM7).</div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Sección 7 (Ancho Completo): Módulos de Juegos e Inteligencia Artificial -->
+      <section class="card section-card section-games full-width">
+        <div class="card-header">
+          <div class="header-tag tag-games">🎮 Módulos Seleccionados de Visión por IA & Juegos</div>
+          <span class="count-badge">3 Juegos Oficiales</span>
+        </div>
+
+        <div id="gamesGrid" class="games-grid">
+          <!-- Dinámico via app.js -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Mira Pro Studio &copy; 2026 | Sistema Profesional de Control y Visión Robótica</p>
+    </footer>
+
+  </div>
+
+  <!-- VENTANA INDEPENDIENTE / MODAL DE VISIÓN IA EN TIEMPO REAL CON WONDERCAM -->
+  <div id="visionGameModal" class="modal-overlay hidden">
+    <div class="modal-window">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span id="modalGameIcon" class="modal-icon">📷</span>
+          <div>
+            <h3 id="modalGameTitle">Monitoreo de Visión IA en Tiempo Real</h3>
+            <span id="modalGameCategory" class="modal-category">WonderCam AI Module (K210 CH340 COM7)</span>
+          </div>
+        </div>
+        <div class="modal-controls-top">
+          <span id="modalGameStatus" class="status-pill disconnected">🔴 DETENIDO</span>
+          <button id="btnCloseModal" class="btn-close-modal">✖</button>
+        </div>
+      </div>
+
+      <!-- Modal Body (Grid: Left Camera Feed + Right Live HUD Telemetry) -->
+      <div class="modal-body-grid">
+
+        <!-- Left: Live Camera Viewport & AI Overlay Frame -->
+        <div class="modal-camera-card">
+          <div class="camera-title-bar">
+            <span>📷 Visor de Telemetría & Reconocimiento WonderCam</span>
+            <select id="cameraSourceSelect" class="camera-select">
+              <option value="synthetic">Espejo IA Telemétrico (WonderCam COM7 + ESP32 COM6)</option>
+              <option value="webcam">Cámara Web Auxiliar</option>
+            </select>
+          </div>
+
+          <div class="camera-viewport-box">
+            <!-- Feed de Video Real si hay webcam -->
+            <video id="gameVideoFeed" class="game-video" autoplay playsinline muted></video>
+            <!-- Canvas Overlay para Bounding Boxes e Identificación IA -->
+            <canvas id="aiOverlayCanvas" class="ai-overlay-canvas" width="640" height="480"></canvas>
+            <!-- Badge de Estado de Visión sobre el video -->
+            <div id="aiTargetBadge" class="ai-target-badge hidden">
+              🎯 Objeto Detectado: <strong id="aiTargetName">Red Block (id: 1)</strong>
+            </div>
+          </div>
+
+          <div class="camera-info-footer">
+            <span id="txtCamResolution">Hardware: WonderCam K210 (LCD Integrada + COM7)</span>
+            <span id="txtCamModel">Modo: Visual Mirror Telemétrico</span>
+          </div>
+        </div>
+
+        <!-- Right: Realtime HUD Telemetry & Game Controls -->
+        <div class="modal-hud-card">
+          <div class="hud-header">
+            <h4>📊 HUD & Registro de Operaciones en Vivo</h4>
+          </div>
+
+          <!-- Target Description Box -->
+          <div class="game-description-box">
+            <h5>ℹ️ Instrucciones & Reglas del Juego:</h5>
+            <p id="modalGameInstructions">Cargando detalles del juego...</p>
+          </div>
+
+          <!-- Target Receptacles Guide -->
+          <div class="receptacles-guide-box">
+            <h5>📍 Receptáculos de Depósito Programados:</h5>
+            <div id="modalReceptaclesList" class="receptacles-list">
+              <!-- Poblado por app.js -->
+            </div>
+          </div>
+
+          <!-- Live Game Activity Log -->
+          <div class="game-log-box">
+            <h5>📟 Eventos del Algoritmo en Tiempo Real:</h5>
+            <div id="gameLogConsole" class="game-log-console">
+              <div class="log-entry system">[SISTEMA] Selecciona "Iniciar Juego" para ejecutar el código del repositorio
+                en el ESP32 (COM6).</div>
+            </div>
+          </div>
+
+          <!-- Action Control Buttons -->
+          <div class="game-action-buttons">
+            <button id="btnStartGame" class="btn-game-act btn-act-start">▶ Iniciar Juego en ESP32</button>
+            <button id="btnStopGame" class="btn-game-act btn-act-stop">⏹️ Detener Juego</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+
+</html>
