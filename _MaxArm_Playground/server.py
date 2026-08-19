@@ -124,10 +124,13 @@ async def run_game(game_id: str):
             code_clean = code_clean.replace("if abs(dx) < 0.1 and abs(dy) < 0.1:", "if abs(center_x - 160) < 28 and abs(center_y - 120) < 22:")
             code_clean = code_clean.replace("if i > 10:", "if i > 4:")
             
-            # 4. Ajuste fino de caída al centro exacto del cubo (d_y = 80mm, +13mm a la derecha, Z=76mm)
+            # 4. Ajuste fino de caída al centro exacto del cubo (d_y = 80mm, +18mm a la derecha, Z=76mm)
             code_clean = code_clean.replace("d_x = x/2.3", "d_x = (x / 2.3) + 18")
             code_clean = code_clean.replace("d_y = (68-abs(d_x/3))", "d_y = 80")
             code_clean = code_clean.replace("arm.set_position((x+d_x,y-d_y,86),600)", "arm.set_position((x+d_x,y-d_y,76),750)")
+        elif game_id == "waste_sorting":
+            # Ajustar la cota de bajada Z para tomar tarjetas del suelo (reducir Z de 50mm a 35mm):
+            code_clean = code_clean.replace("arm.set_position((x,y-d_y,50),600)", "arm.set_position((x,y-d_y,40),600)")
         else:
             code_clean = code_clean.replace("abs(dx) < 0.1 and abs(dy) < 0.1", "abs(dx) < 0.8 and abs(dy) < 0.8")
             code_clean = code_clean.replace("if i > 10:", "if i > 3:")
@@ -180,7 +183,7 @@ cam.get_color_blob = _filtered_get_color_blob"""
 
         return JSONResponse({
             "status": "ok",
-            "message": f"Juego '{target_game['name']}' restaurado a respuesta fluida (28x22px, 4 lecturas).",
+            "message": f"Juego '{target_game['name']}' cargado.",
             "path": script_path
         })
     except Exception as e:
