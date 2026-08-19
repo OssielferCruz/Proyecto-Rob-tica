@@ -1,5 +1,4 @@
 import time
-import _thread as thread
 from machine import Pin, PWM
 from PWMServo import PWMServo
 
@@ -24,26 +23,21 @@ class SuctionNozzle:
     self.nozzle_st = False
     
   def on(self): # 开启气泵，关闭电磁阀
-    if not self.nozzle_st:
-      self.pump_f.duty(self.hz)
-      self.pump_b.duty(0)
-      self.valve_f.duty(0)
-      self.valve_b.duty(0)
-      self.nozzle_st = True
+    self.pump_f.duty(self.hz)
+    self.pump_b.duty(0)
+    self.valve_f.duty(0)
+    self.valve_b.duty(0)
+    self.nozzle_st = True
   
-  def _off(self): # 打开电磁阀，关闭气泵
-    if self.nozzle_st:
-      self.valve_f.duty(self.hz)
-      self.valve_b.duty(0)
-      self.pump_f.duty(0)
-      self.pump_b.duty(0) 
-      time.sleep_ms(1000)
-      self.valve_f.duty(0)
-      self.valve_b.duty(0)
-      self.nozzle_st = False
-  
-  def off(self):
-    thread.start_new_thread(self._off, ())#启动线程
+  def off(self): # 打开电磁阀，关闭气泵 (Ejecucion sincrona sin fallos de subprocesos)
+    self.valve_f.duty(self.hz)
+    self.valve_b.duty(0)
+    self.pump_f.duty(0)
+    self.pump_b.duty(0) 
+    time.sleep_ms(300)
+    self.valve_f.duty(0)
+    self.valve_b.duty(0)
+    self.nozzle_st = False
   
   def set_angle(self, angle=0, duration=1000):
     pulse = map(angle, -90, 90, 500, 2500)
@@ -53,13 +47,3 @@ class SuctionNozzle:
 
 def map(x, in_min, in_max, out_min, out_max):
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-  
-  
-
-
-
-
-
-
-
-

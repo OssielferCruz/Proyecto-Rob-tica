@@ -84,6 +84,34 @@ GAMES_CATALOG = [
             {"source": "../Driver Libraries/TM1640.py", "remote": "TM1640.py"},
             {"source": "main.py", "remote": "main.py"}
         ]
+    },
+    {
+        "id": "handle_control",
+        "category": "Control Inalámbrico USB / Gamepad",
+        "name": "Control por Mando Inalámbrico / Consola",
+        "description": "Permite mover los ejes cartesiano XYZ, succión y rotación con el mando inalámbrico USB.",
+        "icon": "🎮",
+        "rel_path": "Appendix/9. Handle Control Programs/main.py",
+        "bundle_files": [
+            {"source": "USBDevice.py", "remote": "USBDevice.py"},
+            {"source": "RobotControl.py", "remote": "RobotControl.py"},
+            {"source": "SuctionNozzle.py", "remote": "SuctionNozzle.py"},
+            {"source": "main.py", "remote": "main.py"}
+        ]
+    },
+    {
+        "id": "multi_remote_control",
+        "category": "Control Múltiple (Mando, App & PC)",
+        "name": "Control Múltiple (Mando PS2, App & PC)",
+        "description": "Programa maestro para controlar el MaxArm simultáneamente por Mando USB, App Móvil (BLE) y PC.",
+        "icon": "📱",
+        "rel_path": "Appendix/10. Multiple Remote Control and PC Software Program/main.py",
+        "bundle_files": [
+            {"source": "../9. Handle Control Programs/USBDevice.py", "remote": "USBDevice.py"},
+            {"source": "../9. Handle Control Programs/RobotControl.py", "remote": "RobotControl.py"},
+            {"source": "../9. Handle Control Programs/SuctionNozzle.py", "remote": "SuctionNozzle.py"},
+            {"source": "main.py", "remote": "main.py"}
+        ]
     }
 ]
 
@@ -141,6 +169,10 @@ async def run_game(game_id: str):
             code_clean = code_clean.replace("(place_x, place_y, place_z) = (-120,-70,60)", "(place_x, place_y, place_z) = (120,-60,60)")
             # Otros (Der Fondo): (120, -140, 60)
             code_clean = code_clean.replace("(place_x, place_y, place_z) = (-120,-20,60)", "(place_x, place_y, place_z) = (120,-140,60)")
+        elif game_id in ["handle_control", "multi_remote_control"]:
+            # Configurar R1 como Toggle (ON/OFF) y asegurar que R2 apague la boquilla al instante
+            r1_patch = "elif msg == PSB_R1 | PSB_PRESS:\n      if nozzle.nozzle_st:\n        nozzle.off()\n      else:\n        nozzle.on()\n      which_button_press = msg"
+            code_clean = code_clean.replace("elif msg == PSB_R1 | PSB_PRESS: # 打开气泵\n      nozzle.on()\n      which_button_press = msg", r1_patch)
         else:
             code_clean = code_clean.replace("abs(dx) < 0.1 and abs(dy) < 0.1", "abs(dx) < 0.8 and abs(dy) < 0.8")
             code_clean = code_clean.replace("if i > 10:", "if i > 3:")

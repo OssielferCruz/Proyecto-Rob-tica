@@ -130,6 +130,34 @@ const VISION_GAMES_DATA = {
       { "name": "🟩 Zona Verde", "coords": "(-120, -80, 85) mm" },
       { "name": "🟦 Zona Azul", "coords": "(-120, -20, 85) mm" }
     ]
+  },
+  "handle_control": {
+    "id": "handle_control",
+    "name": "Control por Mando Inalámbrico / Consola",
+    "category": "Control por Mando USB / PS2",
+    "icon": "🎮",
+    "description": "Controla los ejes XYZ, succión y rotación utilizando el mando inalámbrico conectado al puerto USB de la tarjeta MaxArm.",
+    "instructions": "1. Conecta el receptor USB inalámbrico en el puerto USB de la placa MaxArm.\n2. Enciende el mando pulsando el botón Power/Mode.\n3. Presiona 'Iniciar Juego en ESP32' para cargar 'Appendix/9. Handle Control Programs/main.py'.",
+    "receptacles": [
+      { "name": "🕹️ Cruceta / Stick Izquierdo (⬆️⬇️⬅️➡️)", "coords": "Mover Ejes X e Y (Plano Horizontal)" },
+      { "name": "🔘 Botón L1 / Botón L2", "coords": "L1: Subir Brazo (Z+) | L2: Bajar Brazo (Z-)" },
+      { "name": "🔘 Botón R1 / Botón R2", "coords": "R1: ENCENDER Succión | R2: APAGAR Succión" },
+      { "name": "🔺 Triángulo / ✖️ Cruz (X)", "coords": "Girar Boquilla (-90° a +90°)" },
+      { "name": "🟢 Círculo / 🟦 Cuadrado", "coords": "Mover Riel Deslizante / Grupos de Acción" }
+    ]
+  },
+  "multi_remote_control": {
+    "id": "multi_remote_control",
+    "name": "Control Múltiple (Mando PS2, App & PC)",
+    "category": "Control Múltiple (Mando, App & PC)",
+    "icon": "📱",
+    "description": "Programa maestro para controlar el MaxArm de forma inalámbrica mediante Mando USB, App Móvil (BLE) y Software PC.",
+    "instructions": "Carga 'Appendix/10.../main.py' en el ESP32. Permite enlace simultáneo con la App Móvil Hiwonder, Mando USB y Software PC.",
+    "receptacles": [
+      { "name": "🎮 Mando Inalámbrico USB", "coords": "Control manual en tiempo real" },
+      { "name": "📱 App Móvil Bluetooth/WiFi", "coords": "Control táctil y secuencias" },
+      { "name": "💻 Software PC Serial/USB", "coords": "Programación gráfica y cinemática" }
+    ]
   }
 };
 
