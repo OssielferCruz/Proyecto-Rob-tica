@@ -57,7 +57,7 @@ GAMES_CATALOG = [
         "id": "waste_sorting",
         "category": "WonderCam AI Vision",
         "name": "Clasificación de Residuos (IA)",
-        "description": "Reconoce tarjetas de residuos con la cámara WonderCam y los clasifica.",
+        "description": "Reconoce tarjetas de residuos con la cámara WonderCam y los clasifica (2 a la izquierda, 2 a la derecha).",
         "icon": "♻️",
         "rel_path": "Appendix/12. AI Vision Game Program Files/Python Development/Program Files/Waste Sorting/main.py",
         "bundle_files": [
@@ -129,8 +129,18 @@ async def run_game(game_id: str):
             code_clean = code_clean.replace("d_y = (68-abs(d_x/3))", "d_y = 80")
             code_clean = code_clean.replace("arm.set_position((x+d_x,y-d_y,86),600)", "arm.set_position((x+d_x,y-d_y,76),750)")
         elif game_id == "waste_sorting":
-            # Ajustar la cota de bajada Z para tomar tarjetas del suelo (reducir Z de 50mm a 35mm):
+            # 1. Ajustar la cota de bajada Z para tomar tarjetas del suelo (reducir Z a 40mm):
             code_clean = code_clean.replace("arm.set_position((x,y-d_y,50),600)", "arm.set_position((x,y-d_y,40),600)")
+            
+            # 2. Redistribuir contenedores: 2 a la izquierda (-120mm) y 2 a la derecha (+120mm)
+            # Peligrosos (Izq Fondo): (-120, -140, 60)
+            code_clean = code_clean.replace("(place_x, place_y, place_z) = (-120,-170,60)", "(place_x, place_y, place_z) = (-120,-140,60)")
+            # Reciclables (Izq Frente): (-120, -60, 60)
+            code_clean = code_clean.replace("(place_x, place_y, place_z) = (-120,-120,60)", "(place_x, place_y, place_z) = (-120,-60,60)")
+            # Orgánicos (Der Frente): (120, -60, 60)
+            code_clean = code_clean.replace("(place_x, place_y, place_z) = (-120,-70,60)", "(place_x, place_y, place_z) = (120,-60,60)")
+            # Otros (Der Fondo): (120, -140, 60)
+            code_clean = code_clean.replace("(place_x, place_y, place_z) = (-120,-20,60)", "(place_x, place_y, place_z) = (120,-140,60)")
         else:
             code_clean = code_clean.replace("abs(dx) < 0.1 and abs(dy) < 0.1", "abs(dx) < 0.8 and abs(dy) < 0.8")
             code_clean = code_clean.replace("if i > 10:", "if i > 3:")

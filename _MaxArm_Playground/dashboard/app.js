@@ -111,10 +111,10 @@ const VISION_GAMES_DATA = {
     "description": "Reconocimiento por la cámara WonderCam de tarjetas de residuos y separación robótica.",
     "instructions": "Ejecuta el código oficial 'Appendix/12.../Waste Sorting/main.py'. La cámara WonderCam sobre el MaxArm identifica la tarjeta y la coloca en el contenedor correspondiente.",
     "receptacles": [
-      { "name": "☣️ Residuos Peligrosos", "coords": "(-120, -170, 60) mm" },
-      { "name": "📦 Material Reciclable", "coords": "(-120, -120, 60) mm" },
-      { "name": "🍏 Basura Orgánica/Kitchen", "coords": "(-120, -70, 60) mm" },
-      { "name": "🗑️ Basura General/Other", "coords": "(-120, -20, 60) mm" }
+      { "name": "☣️ Residuos Peligrosos (Izquierda Fondo)", "coords": "(-120, -140, 60) mm" },
+      { "name": "📦 Material Reciclable (Izquierda Frente)", "coords": "(-120, -60, 60) mm" },
+      { "name": "🍏 Basura Orgánica (Derecha Frente)", "coords": "(120, -60, 60) mm" },
+      { "name": "🗑️ Basura General (Derecha Fondo)", "coords": "(120, -140, 60) mm" }
     ]
   },
   "color_tracking_sorting": {
